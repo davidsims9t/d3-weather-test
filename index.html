@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Data Visualization Example</title>
+  <meta charset="utf-8" />
+  <style>
+  body {
+    font: 11px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .dot {
+    stroke: #000;
+  }
+
+  .tooltip {
+    position: absolute;
+    width: 200px;
+    height: 28px;
+    pointer-events: none;
+  }
+  </style>
+</head>
+<body>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script>
+  'use strict';
+
+  const margin = {top: 20, right: 20, bottom: 20, left: 20};
+  const width = 960 - margin.left - margin.right;
+  const height = 500 - margin.top - margin.bottom;
+
+  const xValue = d => d.date.day;
+  const xScale = d3.scale.linear().range([0, width]);
+  const xMap = d => xScale(xValue(d));
+  const xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+  const yValue = d => d.high.fahrenheit;
+  const yScale = d3.scale.linear().range([height, 0]);
+  const yMap = d => yScale(yValue(d));
+  const yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+  const color = d3.scale.category10();
+
+  let svg = d3
+    .select("body")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  d3.json("./San_Francisco.json?", (err, data) => {
+    const forecastday = data.forecast.simpleforecast.forecastday;
+    if (err) throw err;
+
+    forecastday.forEach(d => {
+      d.high.fahrenheit = parseInt(d.high.fahrenheit);
+      d.low.fahrenheit = parseInt(d.low.fahrenheit);
+    });
+
+    xScale.domain([d3.min(forecastday, xValue) - 1, d3.max(forecastday, xValue) + 1]);
+    yScale.domain([d3.min(forecastday, yValue) - 1, d3.max(forecastday, yValue) + 1]);
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+      .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Date");
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Temperature");
+
+    svg.selectAll(".dot")
+      .data(data.forecast.simpleforecast.forecastday)
+      .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", xMap)
+      .attr("cy", yMap);
+
+    const legend = svg.selectAll(".legend")
+      .data(color.domain())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", (d, i) => "translate(0," + i * 20 + ")");
+
+    legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+    legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(d => d)
+    });
+  </script>
+</body>
+</html>

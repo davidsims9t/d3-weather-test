@@ -1,0 +1,19 @@
+{
+  "name": "d3test",
+  "version": "0.0.1",
+  "description": "A simple d3 visualization.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha index.js",
+    "build": "browserify "
+  },
+  "keywords": [
+    "d3",
+    "css",
+    "html",
+    "test",
+    "visualization"
+  ],
+  "author": "David Sims",
+  "license": "ISC"
+}
